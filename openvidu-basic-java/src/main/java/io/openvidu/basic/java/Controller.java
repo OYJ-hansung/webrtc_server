@@ -41,16 +41,9 @@ public class Controller {
 	@PostMapping("/api/sessions")
 		public ResponseEntity<String> initializeSession(@RequestBody(required = false) Map<String, Object> params)
 			throws OpenViduJavaClientException, OpenViduHttpException {
-			System.out.println("params"+params);
 			SessionProperties properties = SessionProperties.fromJson(params).build();
-			System.out.println("properties: "+properties.customSessionId());
-
-			System.out.println("properties.mediaNode(): "+properties.mediaNode());
-			System.out.println(properties.toJson());
-			System.out.println("OPENVIDU_URL: "+OPENVIDU_URL);
 			try{
 				Session session = openvidu.createSession(properties);
-				System.out.println("hihihi");
 				return new ResponseEntity<>(session.getSessionId(), HttpStatus.OK);
 			}catch (Exception e){
 				System.out.println("error: "+e);

@@ -111,7 +111,7 @@ export default {
         // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
         this.session.connect(token, { clientData: this.myUserName })
           .then(() => {
-
+            console.log("token: "+token);
             // --- 5) Get your own camera stream with the desired properties ---
 
             // Init a publisher passing undefined as targetElement (we don't want OpenVidu to insert a video
