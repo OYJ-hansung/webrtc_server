@@ -49,7 +49,7 @@ import UserVideo from "./components/UserVideo";
 
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
-const APPLICATION_SERVER_URL = process.env.NODE_ENV === 'production' ? '' : 'http://3.143.74.33:5000/';
+const APPLICATION_SERVER_URL = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8080/';
 
 export default {
   name: "App",
@@ -105,7 +105,7 @@ export default {
       // --- 4) Connect to the session with a valid user token ---
 
       // Get a token from the OpenVidu deployment
-      this.getToken(this.mySessionId).then((token) => {
+      this.enterRoom(this.mySessionId).then((token) => {
 
         // First param is the token. Second param can be retrieved by every user on event
         // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
@@ -178,6 +178,13 @@ export default {
      * Visit https://docs.openvidu.io/en/stable/application-server to learn
      * more about the integration of OpenVidu in your application server.
      */
+
+     async enterRoom(mySessionId) {
+      const token = await this.createSession(mySessionId);
+
+      return token;
+    },
+
     async getToken(mySessionId) {
       const sessionId = await this.createSession(mySessionId);
       console.log("sessionId: ",sessionId);
@@ -185,10 +192,11 @@ export default {
     },
 
     async createSession(sessionId) {
-      const response = await axios.post(APPLICATION_SERVER_URL + 'api/sessions', { customSessionId: sessionId, forcedVideoCodec: "VP8"}, {
+      const response = await axios.post(APPLICATION_SERVER_URL + 'room', { sign:"enterRandomroom",sessionName: sessionId, videoCodec: "VP8"}, {
         headers: { 'Content-Type': 'application/json'},
       });
-      return response.data; // The sessionId
+      console.log("response: "+response.data);
+      return response.data.data;
     },
 
     async createToken(sessionId) {
