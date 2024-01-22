@@ -107,7 +107,7 @@ export default {
       this.allSession = this.OV.initSession();
       this.allSession.on("signal:login", async({ stream }) => {
         console.log(stream, "님이 로그인했습니다.");
-        const response = await axios.post(
+        await axios.post(
         "https://capstone-6.shop:4443/openvidu/api/signal",
         {},
         {
