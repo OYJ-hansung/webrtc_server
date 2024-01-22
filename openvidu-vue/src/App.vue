@@ -286,7 +286,7 @@ export default {
     async enterAllSession() {
       const response = await axios.post(
         APPLICATION_SERVER_URL + "room",
-        { sign: "enterAllroom", videoCodec: "VP8" },
+        { sign: "enterDefaultroom", videoCodec: "VP8" },
         {
           headers: { "Content-Type": "application/json" },
         }
