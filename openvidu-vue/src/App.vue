@@ -87,6 +87,7 @@ export default {
     return {
       // OpenVidu objects
       OV: undefined,
+      OVAll: undefined,
       session: undefined,
       allSession: undefined,
       mainStreamManager: undefined,
@@ -102,9 +103,10 @@ export default {
   methods: {
     joinSession() {
       this.OV = new OpenVidu();
+      this.OVAll = new OpenVidu();
 
       // 전체 참여 세션
-      this.allSession = this.OV.initSession();
+      this.allSession = this.OVAll.initSession();
       this.allSession.on("signal:login", async({ stream }) => {
         console.log(stream, "님이 로그인했습니다.");
         await axios.post(
