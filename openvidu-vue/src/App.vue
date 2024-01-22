@@ -100,6 +100,25 @@ export default {
   },
 
   methods: {
+    async sendCallback() {
+      // 로그인 콜백 메소드
+      const response = await axios.post(
+        "https://capstone-6.shop:4443/openvidu/api/signal",
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Basic T1BFTlZJRFVBUFA6TVlfU0VDUkVU",
+          },
+          data: {
+            session: "all",
+            type: "login-callBack",
+            data: myUserName,
+          },
+        }
+      );
+      return response.data;
+    },
     joinSession() {
       this.OV = new OpenVidu();
 
@@ -122,7 +141,7 @@ export default {
         // First param is the token. Second param can be retrieved by every user on event
         // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
         this.allSession
-          .connect(token, { clientData: this.myUserName })
+          .connect(token, { clientData: "yj" })
           .then(() => {
             console.log("token: " + token);
 
@@ -260,7 +279,7 @@ export default {
 
     async enterRoom(mySessionId) {
       // 세션 입장
-      const token = null;
+      let token = null;
       if(mySessionId === "all"){
         token = await this.enterAllSession(mySessionId);
       } else{
@@ -290,26 +309,6 @@ export default {
         }
       );
       return response.data.data;
-    },
-
-    async sendCallback() {
-      // 로그인 콜백 메소드
-      const response = await axios.post(
-        "https://capstone-6.shop:4443/openvidu/api/signal",
-        {},
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Basic T1BFTlZJRFVBUFA6TVlfU0VDUkVU",
-          },
-          data: {
-            session: "all",
-            type: "login-callBack",
-            data: myUserName,
-          },
-        }
-      );
-      return response.data;
     },
   },
 };
