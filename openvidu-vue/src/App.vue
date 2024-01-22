@@ -9,11 +9,21 @@
         <div class="form-group">
           <p>
             <label>Participant</label>
-            <input v-model="myUserName" class="form-control" type="text" required />
+            <input
+              v-model="myUserName"
+              class="form-control"
+              type="text"
+              required
+            />
           </p>
           <p>
             <label>Session</label>
-            <input v-model="mySessionId" class="form-control" type="text" required />
+            <input
+              v-model="mySessionId"
+              class="form-control"
+              type="text"
+              required
+            />
           </p>
           <p class="text-center">
             <button class="btn btn-lg btn-success" @click="joinSession()">
@@ -27,16 +37,28 @@
     <div id="session" v-if="session">
       <div id="session-header">
         <h1 id="session-title">{{ mySessionId }}</h1>
-        <input class="btn btn-large btn-danger" type="button" id="buttonLeaveSession" @click="leaveSession"
-          value="Leave session" />
+        <input
+          class="btn btn-large btn-danger"
+          type="button"
+          id="buttonLeaveSession"
+          @click="leaveSession"
+          value="Leave session"
+        />
       </div>
       <div id="main-video" class="col-md-6">
         <user-video :stream-manager="mainStreamManager" />
       </div>
       <div id="video-container" class="col-md-6">
-        <user-video :stream-manager="publisher" @click.native="updateMainVideoStreamManager(publisher)" />
-        <user-video v-for="sub in subscribers" :key="sub.stream.connection.connectionId" :stream-manager="sub"
-          @click.native="updateMainVideoStreamManager(sub)" />
+        <user-video
+          :stream-manager="publisher"
+          @click.native="updateMainVideoStreamManager(publisher)"
+        />
+        <user-video
+          v-for="sub in subscribers"
+          :key="sub.stream.connection.connectionId"
+          :stream-manager="sub"
+          @click.native="updateMainVideoStreamManager(sub)"
+        />
       </div>
     </div>
   </div>
@@ -49,7 +71,10 @@ import UserVideo from "./components/UserVideo";
 
 axios.defaults.headers.post["Content-Type"] = "application/json";
 
-const APPLICATION_SERVER_URL = process.env.NODE_ENV === 'production' ? '' : 'https://capstone-6.shop:8080/dagak/';
+const APPLICATION_SERVER_URL =
+  process.env.NODE_ENV === "production"
+    ? ""
+    : "https://capstone-6.shop:8080/dagak/";
 
 export default {
   name: "App",
@@ -63,6 +88,7 @@ export default {
       // OpenVidu objects
       OV: undefined,
       session: undefined,
+      allSession: undefined,
       mainStreamManager: undefined,
       publisher: undefined,
       subscribers: [],
@@ -75,15 +101,67 @@ export default {
 
   methods: {
     joinSession() {
-      // --- 1) Get an OpenVidu object ---
       this.OV = new OpenVidu();
 
-      // --- 2) Init a session ---
-      this.session = this.OV.initSession();
+      // 전체 참여 세션
+      this.allSession = this.OV.initSession();
+      this.allSession.on("signal:login", ({ stream }) => {
+        console.log(stream, "님이 로그인했습니다.");
+        sendCallback();
+      });
 
+      this.allSession.on("signal:login-callBack", ({ stream }) => {
+        console.log("[콜백] ", stream, "님이 로그인했습니다.");
+      });
+
+      this.allSession.on("exception", ({ exception }) => {
+        console.warn(exception);
+      });
+
+      this.enterAllSession("all").then((token) => {
+        // First param is the token. Second param can be retrieved by every user on event
+        // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
+        this.allSession
+          .connect(token, { clientData: this.myUserName })
+          .then(() => {
+            console.log("token: " + token);
+
+            let publisher = this.OV.initPublisher(undefined, {
+              audioSource: undefined, // The source of audio. If undefined default microphone
+              videoSource: undefined, // The source of video. If undefined default webcam
+              publishAudio: false, // Whether you want to start publishing with your audio unmuted or not
+              publishVideo: false, // Whether you want to start publishing with your video enabled or not
+              resolution: "640x480", // The resolution of your video
+              frameRate: 30, // The frame rate of your video
+              insertMode: "APPEND", // How the video is inserted in the target element 'video-container'
+              mirror: false, // Whether to mirror your local video or not
+            });
+
+            // Set the main video in the page to display our webcam and store our Publisher
+            this.mainStreamManager = publisher;
+            this.publisher = publisher;
+
+            // --- 6) Publish your stream ---;
+            this.session.publish(this.publisher);
+            console.log("allSession에 로그인했습니다.")
+          })
+          .catch((error) => {
+            console.log(
+              "There was an error connecting to the session:",
+              error.code,
+              error.message
+            );
+          });
+      });
+
+      this.session = this.OV.initSession();
       // --- 3) Specify the actions when events take place in the session ---
 
-      // On every new Stream received...
+      this.session.on("streamCreated", ({ stream }) => {
+        const subscriber = this.session.subscribe(stream);
+        this.subscribers.push(subscriber);
+      });
+
       this.session.on("streamCreated", ({ stream }) => {
         const subscriber = this.session.subscribe(stream);
         this.subscribers.push(subscriber);
@@ -102,16 +180,13 @@ export default {
         console.warn(exception);
       });
 
-      // --- 4) Connect to the session with a valid user token ---
-
-      // Get a token from the OpenVidu deployment
       this.enterRoom(this.mySessionId).then((token) => {
-
         // First param is the token. Second param can be retrieved by every user on event
         // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
-        this.session.connect(token, { clientData: this.myUserName })
+        this.session
+          .connect(token, { clientData: this.myUserName })
           .then(() => {
-            console.log("token: "+token);
+            console.log("token: " + token);
             // --- 5) Get your own camera stream with the desired properties ---
 
             // Init a publisher passing undefined as targetElement (we don't want OpenVidu to insert a video
@@ -136,7 +211,11 @@ export default {
             this.session.publish(this.publisher);
           })
           .catch((error) => {
-            console.log("There was an error connecting to the session:", error.code, error.message);
+            console.log(
+              "There was an error connecting to the session:",
+              error.code,
+              error.message
+            );
           });
       });
 
@@ -179,32 +258,58 @@ export default {
      * more about the integration of OpenVidu in your application server.
      */
 
-     async enterRoom(mySessionId) {
-      const token = await this.createSession(mySessionId);
-
+    async enterRoom(mySessionId) {
+      // 세션 입장
+      const token = null;
+      if(mySessionId === "all"){
+        token = await this.enterAllSession(mySessionId);
+      } else{
+        token = await this.createSession(mySessionId);
+      }
       return token;
     },
 
-    async getToken(mySessionId) {
-      const sessionId = await this.createSession(mySessionId);
-      console.log("sessionId: ",sessionId);
-      return await this.createToken(sessionId);
-    },
-
-    async createSession(sessionId) {
-      const response = await axios.post(APPLICATION_SERVER_URL + 'room', { sign:"enterRandomroom",sessionName: sessionId, videoCodec: "VP8"}, {
-        headers: { 'Content-Type': 'application/json'},
-      });
-      console.log("response: "+response.data);
+    async enterAllSession() {
+      const response = await axios.post(
+        APPLICATION_SERVER_URL + "room",
+        { sign: "enterAllroom", videoCodec: "VP8" },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
       return response.data.data;
     },
 
-    async createToken(sessionId) {
-      const response = await axios.post(APPLICATION_SERVER_URL + 'api/sessions/' + sessionId + '/connections', {}, {
-        headers: { "Content-Type": "application/json", 
-        Authorization : "Basic T1BFTlZJRFVBUFA6TVlfU0VDUkVUCg==" },
-      });
-      return response.data; // The token
+    async createSession(sessionId) {
+      // 세션 생성
+      const response = await axios.post(
+        APPLICATION_SERVER_URL + "room",
+        { sign: "enterRandomroom", sessionName: sessionId, videoCodec: "VP8" },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      return response.data.data;
+    },
+
+    async sendCallback() {
+      // 로그인 콜백 메소드
+      const response = await axios.post(
+        "https://capstone-6.shop:4443/openvidu/api/signal",
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Basic T1BFTlZJRFVBUFA6TVlfU0VDUkVU",
+          },
+          data: {
+            session: "all",
+            type: "login-callBack",
+            data: myUserName,
+          },
+        }
+      );
+      return response.data;
     },
   },
 };
