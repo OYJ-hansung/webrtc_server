@@ -100,9 +100,14 @@ export default {
   },
 
   methods: {
-    async sendCallback() {
-      // 로그인 콜백 메소드
-      const response = await axios.post(
+    joinSession() {
+      this.OV = new OpenVidu();
+
+      // 전체 참여 세션
+      this.allSession = this.OV.initSession();
+      this.allSession.on("signal:login", async({ stream }) => {
+        console.log(stream, "님이 로그인했습니다.");
+        const response = await axios.post(
         "https://capstone-6.shop:4443/openvidu/api/signal",
         {},
         {
@@ -113,20 +118,10 @@ export default {
           data: {
             session: "all",
             type: "login-callBack",
-            data: myUserName,
+            data: "yj",
           },
         }
       );
-      return response.data;
-    },
-    joinSession() {
-      this.OV = new OpenVidu();
-
-      // 전체 참여 세션
-      this.allSession = this.OV.initSession();
-      this.allSession.on("signal:login", ({ stream }) => {
-        console.log(stream, "님이 로그인했습니다.");
-        sendCallback();
       });
 
       this.allSession.on("signal:login-callBack", ({ stream }) => {
