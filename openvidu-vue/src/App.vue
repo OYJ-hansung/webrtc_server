@@ -133,12 +133,13 @@ export default {
       });
 
       this.enterAllSession("all").then((token) => {
+        console.log("발급된 토큰:",token)
         // First param is the token. Second param can be retrieved by every user on event
         // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
         this.allSession
           .connect(token, { clientData: "yj" })
           .then(() => {
-            console.log("token: " + token);
+            console.log("all session token: " + token);
 
             let publisher = this.OV.initPublisher(undefined, {
               audioSource: undefined, // The source of audio. If undefined default microphone
@@ -286,11 +287,12 @@ export default {
     async enterAllSession() {
       const response = await axios.post(
         APPLICATION_SERVER_URL + "room",
-        { sign: "enterDefaultroom", videoCodec: "VP8" },
+        { sign: "enterDefaultroom" },
         {
           headers: { "Content-Type": "application/json" },
         }
       );
+      console.log("전체 세션 토큰:",response.data);
       return response.data.data;
     },
 
@@ -303,6 +305,7 @@ export default {
           headers: { "Content-Type": "application/json" },
         }
       );
+      
       return response.data.data;
     },
   },
