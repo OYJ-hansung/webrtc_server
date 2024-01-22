@@ -169,8 +169,8 @@ export default {
               error.message
             );
           });
-      });
-
+      })
+      
       this.session = this.OV.initSession();
       // --- 3) Specify the actions when events take place in the session ---
 
