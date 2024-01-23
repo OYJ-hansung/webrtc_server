@@ -3,9 +3,9 @@ module.exports = {
     devServer: {
         https: true,
         https: {
-            key: fs.readFileSync('/etc/letsencrypt/live/i10a404.p.ssafy.io/privkey.pem'),
-            cert: fs.readFileSync('/etc/letsencrypt/live/i10a404.p.ssafy.io/cert.pem'),
-            ca: fs.readFileSync('/etc/letsencrypt/live/i10a404.p.ssafy.io/chain.pem'),
+            key: fs.readFileSync('/etc/letsencrypt/live/capstone-6.shop/privkey.pem'),
+            cert: fs.readFileSync('/etc/letsencrypt/live/capstone-6.shop/cert.pem'),
+            ca: fs.readFileSync('/etc/letsencrypt/live/capstone-6.shop/chain.pem'),
         },
         hot: true,
         allowedHosts: "all",
