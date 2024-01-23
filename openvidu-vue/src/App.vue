@@ -110,11 +110,11 @@ export default {
       // 전체 참여 세션
       this.allSession = this.OVAll.initSession();
 
-      this.allSession.on("signal:"+myUserName, ({ stream }) => {
+      this.allSession.on("signal:"+this.myUserName, ({ stream }) => {
         console.log("친구가 로그인했습니다: "+stream);
       });
 
-      this.enterAllSession(myUserName).then((token) => {
+      this.enterAllSession(this.myUserName).then((token) => {
         console.log("발급된 토큰:",token)
         this.allSession
           .connect(token, { clientData: "yj" })
@@ -272,42 +272,42 @@ export default {
     },
 
 
-    async sendFriendRequest() {
+    // async sendFriendRequest() {
 
-      const DBsaveResponse = await axios.post(
-        "https://capstone-6.shop:4443/openvidu/api/signal",
-        {
-            "session" : allSession,
-            "type" : "Notification",
-            "data" : {
-                "type" : "friendRequest",
-                "requestedUserId" : "youngjoo",
-                "userId" : myUserName,
-            }
-        },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+    //   const DBsaveResponse = await axios.post(
+    //     "https://capstone-6.shop:4443/openvidu/api/signal",
+    //     {
+    //         "session" : allSession,
+    //         "type" : "Notification",
+    //         "data" : {
+    //             "type" : "friendRequest",
+    //             "requestedUserId" : "youngjoo",
+    //             "userId" : myUserName,
+    //         }
+    //     },
+    //     {
+    //       headers: { "Content-Type": "application/json" },
+    //     }
+    //   );
 
-      const response = await axios.post(
-        "https://capstone-6.shop:4443/openvidu/api/signal",
-        {
-            "session" : allSession,
-            "type" : "Notification",
-            "data" : {
-                "type" : "friendRequest",
-                "requestedUserId" : "youngjoo",
-                "userId" : myUserName,
-            }
-        },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+    //   const response = await axios.post(
+    //     "https://capstone-6.shop:4443/openvidu/api/signal",
+    //     {
+    //         "session" : allSession,
+    //         "type" : "Notification",
+    //         "data" : {
+    //             "type" : "friendRequest",
+    //             "requestedUserId" : "youngjoo",
+    //             "userId" : myUserName,
+    //         }
+    //     },
+    //     {
+    //       headers: { "Content-Type": "application/json" },
+    //     }
+    //   );
       
-      return response.data.data;
-    },
+    //   return response.data.data;
+    // },
 
 
 
