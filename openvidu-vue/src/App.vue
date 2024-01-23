@@ -26,8 +26,11 @@
             />
           </p>
           <p class="text-center">
-            <button class="btn btn-lg btn-success" @click="joinSession()">
+            <button class="btn btn-lg btn-success mr-3" @click="joinSession()">
               Join!
+            </button>
+            <button class="btn btn-lg btn-success" @click="loginSession()">
+              Login!
             </button>
           </p>
         </div>
@@ -85,92 +88,92 @@ export default {
 
   data() {
     return {
-      // OpenVidu objects
       OV: undefined,
-      OVAll: undefined,
+      OVMy: undefined, // 내 개인 방
       session: undefined,
-      allSession: undefined,
+      mySession: undefined,
       mainStreamManager: undefined,
+      mainStreamManagerMySession : undefined,
       publisher: undefined,
+      publisherMySession : undefined,
       subscribers: [],
 
-      // Join form
+      // 초기 데이터
       mySessionId: "SessionA",
       myUserName: "Participant" + Math.floor(Math.random() * 100),
     };
   },
 
   methods: {
+    loginSession() { // 로그인 발생 이벤트
+      this.OVMy = new OpenVidu();
+      // 전체 참여 세션
+      this.mySession = this.OVMy.initSession();
+      this.mySession.on("signal:login", async({ stream }) => {  // 로그인 시그널 수신
+        console.log(stream, "님이 로그인했습니다.");
+        await axios.post( // 로그인 콜백
+        "https://capstone-6.shop:4443/openvidu/api/signal",
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Basic T1BFTlZJRFVBUFA6TVlfU0VDUkVU",
+          },
+          data: {
+            session: this.myUserName,
+            type: "login-callBack",
+            data: "yj",
+          },
+        }
+      );
+      });
+
+      this.mySession.on("signal:login-callBack", ({ stream }) => {
+        console.log("[콜백] 친구 ", stream, "님이 로그인했습니다.");
+      });
+
+      this.mySession.on("exception", ({ exception }) => {
+        console.warn(exception);
+      });
+
+      this.enterMyRoom().then((token) => {
+        console.log("나의 방 토큰:",token)
+
+        this.mySession
+          .connect(token, { clientData:this.myUserName })
+          .then(() => {
+            let publisherMySession = this.OVMy.initPublisher(undefined, {
+              audioSource: undefined, // The source of audio. If undefined default microphone
+              videoSource: undefined, // The source of video. If undefined default webcam
+              publishAudio: false, // Whether you want to start publishing with your audio unmuted or not
+              publishVideo: false, // Whether you want to start publishing with your video enabled or not
+              resolution: "640x480", // The resolution of your video
+              frameRate: 30, // The frame rate of your video
+              insertMode: "APPEND", // How the video is inserted in the target element 'video-container'
+              mirror: false, // Whether to mirror your local video or not
+            });
+
+            // Set the main video in the page to display our webcam and store our Publisher
+            this.mainStreamManagerMySession = publisherMySession;
+            this.publisherMySession = publisherMySession;
+
+            // --- 6) Publish your stream ---;
+            this.mySession.publish(this.publisherMySession);
+            console.log("mySession에 로그인했습니다.")
+          })
+          .catch((error) => {
+            console.log(
+              "다음 세션에 로그인하는데 오류가 발생했습니다!:",
+              error.code,
+              error.message
+            );
+          });
+      })
+    },
+
+
     joinSession() {
       this.OV = new OpenVidu();
-      // this.OVAll = new OpenVidu();
-
-      // // 전체 참여 세션
-      // this.allSession = this.OVAll.initSession();
-      // this.allSession.on("signal:login", async({ stream }) => {
-      //   console.log(stream, "님이 로그인했습니다.");
-      //   await axios.post(
-      //   "https://capstone-6.shop:4443/openvidu/api/signal",
-      //   {},
-      //   {
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       Authorization: "Basic T1BFTlZJRFVBUFA6TVlfU0VDUkVU",
-      //     },
-      //     data: {
-      //       session: "all",
-      //       type: "login-callBack",
-      //       data: "yj",
-      //     },
-      //   }
-      // );
-      // });
-
-      // this.allSession.on("signal:login-callBack", ({ stream }) => {
-      //   console.log("[콜백] ", stream, "님이 로그인했습니다.");
-      // });
-
-      // this.allSession.on("exception", ({ exception }) => {
-      //   console.warn(exception);
-      // });
-
-      // this.enterAllSession("all").then((token) => {
-      //   console.log("발급된 토큰:",token)
-      //   // First param is the token. Second param can be retrieved by every user on event
-      //   // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
-      //   this.allSession
-      //     .connect(token, { clientData: "yj" })
-      //     .then(() => {
-      //       console.log("all session token: " + token);
-
-      //       let publisher = this.OV.initPublisher(undefined, {
-      //         audioSource: undefined, // The source of audio. If undefined default microphone
-      //         videoSource: undefined, // The source of video. If undefined default webcam
-      //         publishAudio: false, // Whether you want to start publishing with your audio unmuted or not
-      //         publishVideo: false, // Whether you want to start publishing with your video enabled or not
-      //         resolution: "640x480", // The resolution of your video
-      //         frameRate: 30, // The frame rate of your video
-      //         insertMode: "APPEND", // How the video is inserted in the target element 'video-container'
-      //         mirror: false, // Whether to mirror your local video or not
-      //       });
-
-      //       // Set the main video in the page to display our webcam and store our Publisher
-      //       this.mainStreamManager = publisher;
-      //       this.publisher = publisher;
-
-      //       // --- 6) Publish your stream ---;
-      //       this.session.publish(this.publisher);
-      //       console.log("allSession에 로그인했습니다.")
-      //     })
-      //     .catch((error) => {
-      //       console.log(
-      //         "There was an error connecting to the session:",
-      //         error.code,
-      //         error.message
-      //       );
-      //     });
-      // })
-      
       this.session = this.OV.initSession();
       // --- 3) Specify the actions when events take place in the session ---
 
@@ -277,29 +280,11 @@ export default {
 
     async enterRoom(mySessionId) {
       // 세션 입장
-      let token = null;
-      if(mySessionId === "all"){
-        token = await this.enterAllSession(mySessionId);
-      } else{
-        token = await this.createSession(mySessionId);
-      }
+      let token = await this.createSession(mySessionId);
       return token;
     },
 
-    async enterAllSession() {
-      const response = await axios.post(
-        APPLICATION_SERVER_URL + "room",
-        { sign: "enterDefaultroom" },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-      console.log("전체 세션 토큰:",response.data);
-      return response.data.data;
-    },
-
-    async createSession(sessionId) {
-      // 세션 생성
+    async createSession(sessionId) { // 세션 생성
       const response = await axios.post(
         APPLICATION_SERVER_URL + "room",
         { sign: "enterRandomroom", sessionName: sessionId, videoCodec: "VP8" },
@@ -308,6 +293,22 @@ export default {
         }
       );
       
+      return response.data.data;
+    },
+
+    async enterMyRoom() {
+      let token = await this.createMyRoom();
+      return token;
+    },
+
+    async createMyRoom() {
+      const response = await axios.post(
+        APPLICATION_SERVER_URL + "room",
+        { sign: "enterMyRoom", userId:this.myUserName }, // 내이름으로된 세션을 생성한다
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
       return response.data.data;
     },
   },
