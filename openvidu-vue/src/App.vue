@@ -264,7 +264,7 @@ export default {
     async enterAllSession() {
       const response = await axios.post(
         APPLICATION_SERVER_URL + "room",
-        { sign: "enterMyRoom" },
+        { sign: "enterMyRoom", userId:"yj" },
         {
           headers: { "Content-Type": "application/json" },
         }
