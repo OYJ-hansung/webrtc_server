@@ -109,41 +109,17 @@ export default {
 
       // 전체 참여 세션
       this.allSession = this.OVAll.initSession();
-      this.allSession.on("signal:login", async({ stream }) => {
-        console.log(stream, "님이 로그인했습니다.");
-        await axios.post(
-        "https://capstone-6.shop:4443/openvidu/api/signal",
-        {},
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: "Basic T1BFTlZJRFVBUFA6TVlfU0VDUkVU",
-          },
-          data: {
-            session: "all",
-            type: "login-callBack",
-            data: "yj",
-          },
-        }
-      );
+
+      this.allSession.on("signal:"+myUserName, ({ stream }) => {
+        console.log("친구가 로그인했습니다: "+stream);
       });
 
-      this.allSession.on("signal:login-callBack", ({ stream }) => {
-        console.log("[콜백] ", stream, "님이 로그인했습니다.");
-      });
-
-      this.allSession.on("exception", ({ exception }) => {
-        console.warn(exception);
-      });
-
-      this.enterAllSession("all").then((token) => {
+      this.enterAllSession(myUserName).then((token) => {
         console.log("발급된 토큰:",token)
-        // First param is the token. Second param can be retrieved by every user on event
-        // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
         this.allSession
           .connect(token, { clientData: "yj" })
           .then(() => {
-            console.log("all session token: " + token);
+            console.log("myUserName session token: " + token);
 
             let publisher = this.OV.initPublisher(undefined, {
               audioSource: undefined, // The source of audio. If undefined default microphone
@@ -162,7 +138,7 @@ export default {
 
             // --- 6) Publish your stream ---;
             this.session.publish(this.publisher);
-            console.log("allSession에 로그인했습니다.")
+            console.log("개인세션에 로그인했습니다.")
             alert("Login!");
           })
           .catch((error) => {
@@ -180,7 +156,6 @@ export default {
       this.OV = new OpenVidu();
      
       this.session = this.OV.initSession();
-      // --- 3) Specify the actions when events take place in the session ---
 
       this.session.on("streamCreated", ({ stream }) => {
         const subscriber = this.session.subscribe(stream);
@@ -280,19 +255,14 @@ export default {
 
     async enterRoom(mySessionId) {
       // 세션 입장
-      let token = null;
-      if(mySessionId === "all"){
-        token = await this.enterAllSession(mySessionId);
-      } else{
-        token = await this.createSession(mySessionId);
-      }
+      let token = await this.createSession(mySessionId);
       return token;
     },
 
     async enterAllSession() {
       const response = await axios.post(
         APPLICATION_SERVER_URL + "room",
-        { sign: "enterDefaultroom" },
+        { sign: "enterMyRoom" },
         {
           headers: { "Content-Type": "application/json" },
         }
@@ -300,6 +270,46 @@ export default {
       console.log("전체 세션 토큰:",response.data);
       return response.data.data;
     },
+
+
+    async sendFriendRequest() {
+
+      const DBsaveResponse = await axios.post(
+        "https://capstone-6.shop:4443/openvidu/api/signal",
+        {
+            "session" : allSession,
+            "type" : "Notification",
+            "data" : {
+                "type" : "friendRequest",
+                "requestedUserId" : "youngjoo",
+                "userId" : myUserName,
+            }
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      const response = await axios.post(
+        "https://capstone-6.shop:4443/openvidu/api/signal",
+        {
+            "session" : allSession,
+            "type" : "Notification",
+            "data" : {
+                "type" : "friendRequest",
+                "requestedUserId" : "youngjoo",
+                "userId" : myUserName,
+            }
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      
+      return response.data.data;
+    },
+
+
 
     async createSession(sessionId) {
       // 세션 생성
