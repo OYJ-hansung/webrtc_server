@@ -104,8 +104,7 @@ export default {
   },
 
   methods: {
-    joinSession() {
-      this.OV = new OpenVidu();
+    loginSession() {
       this.OVAll = new OpenVidu();
 
       // 전체 참여 세션
@@ -164,6 +163,7 @@ export default {
             // --- 6) Publish your stream ---;
             this.session.publish(this.publisher);
             console.log("allSession에 로그인했습니다.")
+            alert("Login!");
           })
           .catch((error) => {
             console.log(
@@ -178,74 +178,7 @@ export default {
     },
     joinSession() {
       this.OV = new OpenVidu();
-      // this.OVAll = new OpenVidu();
-
-      // // 전체 참여 세션
-      // this.allSession = this.OVAll.initSession();
-      // this.allSession.on("signal:login", async({ stream }) => {
-      //   console.log(stream, "님이 로그인했습니다.");
-      //   await axios.post(
-      //   "https://capstone-6.shop:4443/openvidu/api/signal",
-      //   {},
-      //   {
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       Authorization: "Basic T1BFTlZJRFVBUFA6TVlfU0VDUkVU",
-      //     },
-      //     data: {
-      //       session: "all",
-      //       type: "login-callBack",
-      //       data: "yj",
-      //     },
-      //   }
-      // );
-      // });
-
-      // this.allSession.on("signal:login-callBack", ({ stream }) => {
-      //   console.log("[콜백] ", stream, "님이 로그인했습니다.");
-      // });
-
-      // this.allSession.on("exception", ({ exception }) => {
-      //   console.warn(exception);
-      // });
-
-      // this.enterAllSession("all").then((token) => {
-      //   console.log("발급된 토큰:",token)
-      //   // First param is the token. Second param can be retrieved by every user on event
-      //   // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
-      //   this.allSession
-      //     .connect(token, { clientData: "yj" })
-      //     .then(() => {
-      //       console.log("all session token: " + token);
-
-      //       let publisher = this.OV.initPublisher(undefined, {
-      //         audioSource: undefined, // The source of audio. If undefined default microphone
-      //         videoSource: undefined, // The source of video. If undefined default webcam
-      //         publishAudio: false, // Whether you want to start publishing with your audio unmuted or not
-      //         publishVideo: false, // Whether you want to start publishing with your video enabled or not
-      //         resolution: "640x480", // The resolution of your video
-      //         frameRate: 30, // The frame rate of your video
-      //         insertMode: "APPEND", // How the video is inserted in the target element 'video-container'
-      //         mirror: false, // Whether to mirror your local video or not
-      //       });
-
-      //       // Set the main video in the page to display our webcam and store our Publisher
-      //       this.mainStreamManager = publisher;
-      //       this.publisher = publisher;
-
-      //       // --- 6) Publish your stream ---;
-      //       this.session.publish(this.publisher);
-      //       console.log("allSession에 로그인했습니다.")
-      //     })
-      //     .catch((error) => {
-      //       console.log(
-      //         "There was an error connecting to the session:",
-      //         error.code,
-      //         error.message
-      //       );
-      //     });
-      // })
-      
+     
       this.session = this.OV.initSession();
       // --- 3) Specify the actions when events take place in the session ---
 
