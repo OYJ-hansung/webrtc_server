@@ -74,7 +74,7 @@ axios.defaults.headers.post["Content-Type"] = "application/json";
 const APPLICATION_SERVER_URL =
   process.env.NODE_ENV === "production"
     ? ""
-    : "https://i10a404.p.ssafy.io:8080/dagak/";
+    : "https://capstone-6.shop:8080/dagak/";
 
 export default {
   name: "App",
