@@ -108,6 +108,7 @@ export default {
       this.OVAll = new OpenVidu();
       this.myUserName = "yj"
 
+      console.log(this.myUserName);
       // 전체 참여 세션
       this.allSession = this.OVAll.initSession();
 
