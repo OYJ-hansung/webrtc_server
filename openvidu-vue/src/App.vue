@@ -111,6 +111,7 @@ export default {
       this.mySession = this.OVMy.initSession();
       this.mySession.on("signal:login", async({ stream }) => {  // 로그인 시그널 수신
         console.log(stream, "님이 로그인했습니다.");
+        alert("친구가 로그인했어요!")
         await axios.post( // 로그인 콜백
         "https://capstone-6.shop:4443/openvidu/api/signal",
         {},
@@ -160,6 +161,7 @@ export default {
             // --- 6) Publish your stream ---;
             this.mySession.publish(this.publisherMySession);
             console.log("mySession에 로그인했습니다.")
+            alert("로그인에 성공했습니다.")
           })
           .catch((error) => {
             console.log(
