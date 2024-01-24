@@ -109,7 +109,7 @@ export default {
       this.OVMy = new OpenVidu();
       // 전체 참여 세션
       this.mySession = this.OVMy.initSession();
-      this.mySession.on("signal:login", async({ stream }) => {  // 로그인 시그널 수신
+      this.mySession.on("signal", async({ stream }) => {  // 로그인 시그널 수신
         console.log(stream, "님이 로그인했습니다.");
         alert("친구가 로그인했어요!")
         await axios.post( // 로그인 콜백
